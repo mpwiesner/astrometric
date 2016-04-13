@@ -4,7 +4,8 @@ Code used to analyze astrometric errors in LSST images.
 TO TEST USING IDL:  
 
 idl
-.compile astrometric.pro
+.compile 
+astrometric.pro
 astrometric
 
 TO TEST USING PYTHON:
