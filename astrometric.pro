@@ -5,16 +5,24 @@ pro astrometric
 
 ;You will need to make these directories if they do not exist:  'astro_out' and 'atmospheres_new'
 
-start_image=1     							   ;The starting number of images to run on
-end_image=1									;The ending number of images to run on
+start_image=9     							   ;The starting number of images to run on
+end_image=10									;The ending number of images to run on
 start_iterate=0									;The starting number of iterations of an image
 end_iterate=9									;The ending number of iterations of an image
 the_directory=''								;Declares the next value a string
 the_directory='examples/'				;The directory where the input catalogs are
-prefix='rotate_'										;The prefix of the image name, before the numbers
+prefix='star_'										;The prefix of the image name, before the numbers
 bin_increment=50								;Size of steps to make in bins of distance
 
 
+;---------------------------------------------
+;SETUP STUFF
+!p.multi=[0,1,1,0,0]
+A = FINDGEN(17) * (!PI*2/16.)  
+USERSYM, COS(A), SIN(A), /FILL  
+set_plot, 'PS'
+simpctable
+DEVICE, /encapsul, /color, /landscape, FILENAME='examples/output.ps'
 ;---------------------------------------------
 
 number_of_columns=(end_iterate-start_iterate)+1
@@ -147,10 +155,21 @@ bad=where(dispersion GT 0.100)
 
 print, 'THIS MANY BAD:', N_ELEMENTS(dispersion[bad]), ' out of ', N_ELEMENTS(dispersion)
 
-forprint, meanie, dispie, textout=the_directory+prefix+'atmosphere_new.'+strcompress(p,/remove_all)+'.zero', /NOCOMMENT, format='(D0.0,1x,D0.0)'
+;NOW DO THE PLOT
+
+	If p EQ start_image then begin
+	plot, meanie, dispie, psym=8, xtitle='Mean separation (arcsec)', ytitle='Dispersion (mas)', title='Astrometric Error vs. Separation', yrange=[0,50], ystyle=1, xrange=[0,800]
+	oplot, meanie, dispie, linestyle=0
+	endif else begin
+	oplot, meanie, dispie, psym=8, color=!red
+	oplot, meanie, dispie, linestyle=0, color=!red
+	endelse
 
 endfor
 
-astrometric_plot
+device, /close
+
+spawn, 'ps2pdf -dAutoRotatePages=180 examples/output.ps examples/output.pdf'
+spawn, 'open -a Adobe\ Reader examples/output.pdf'
 
 end 
